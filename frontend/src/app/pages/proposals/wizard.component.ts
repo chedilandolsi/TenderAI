@@ -1,16 +1,17 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ProposalService } from '../../core/services/proposal.service';
 import { ProfileService } from '../../core/services/profile.service';
+import { TranslationService } from '../../core/services/translation.service';
 import { CaseStudy, Proposal, ProposalContent, ProposalRequest } from '../../models';
 import { IconComponent } from '../../shared/components/icon.component';
 
 @Component({
   selector: 'app-wizard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, IconComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, IconComponent],
   template: `
     <div class="space-y-8 max-w-5xl mx-auto">
       <!-- Stepper Indicator -->
@@ -34,7 +35,7 @@ import { IconComponent } from '../../shared/components/icon.component';
             >
               {{ currentStep() > 1 ? '✓' : '1' }}
             </span>
-            <span class="hidden sm:inline">1. Tender Spec</span>
+            <span class="hidden sm:inline">{{ i18n.t('wizard.step1') }}</span>
           </div>
 
           <!-- Step 2 Tab -->
@@ -55,7 +56,7 @@ import { IconComponent } from '../../shared/components/icon.component';
             >
               {{ currentStep() > 2 ? '✓' : '2' }}
             </span>
-            <span class="hidden sm:inline">2. Match Track Records</span>
+            <span class="hidden sm:inline">{{ i18n.t('wizard.step2') }}</span>
           </div>
 
           <!-- Step 3 Tab -->
@@ -76,7 +77,7 @@ import { IconComponent } from '../../shared/components/icon.component';
             >
               {{ currentStep() > 3 ? '✓' : '3' }}
             </span>
-            <span class="hidden sm:inline">3. AI Synthesis</span>
+            <span class="hidden sm:inline">{{ i18n.t('wizard.step3') }}</span>
           </div>
 
           <!-- Step 4 Tab -->
@@ -95,7 +96,7 @@ import { IconComponent } from '../../shared/components/icon.component';
             >
               4
             </span>
-            <span class="hidden sm:inline">4. Proposal & Export</span>
+            <span class="hidden sm:inline">{{ i18n.t('wizard.step4') }}</span>
           </div>
         </div>
       </div>
@@ -104,9 +105,9 @@ import { IconComponent } from '../../shared/components/icon.component';
       <div *ngIf="currentStep() === 1" class="space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 class="text-2xl font-bold tracking-tight text-white">Step 1: Tender Scope & Specifications</h1>
+            <h1 class="text-2xl font-bold tracking-tight text-white">{{ i18n.t('wizard.step1Title') }}</h1>
             <p class="text-xs text-slate-400 mt-1">
-              Upload the contracting authority's tender document or paste the RFP specifications
+              {{ i18n.t('wizard.step1Subtitle') }}
             </p>
           </div>
           <button
@@ -115,7 +116,7 @@ import { IconComponent } from '../../shared/components/icon.component';
             class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-brand-500/10 text-brand-300 hover:bg-brand-500/20 border border-brand-500/30 text-xs font-semibold transition-colors"
           >
             <app-icon name="sparkles" [size]="14"></app-icon>
-            <span>Pre-fill Sample EU Tender</span>
+            <span>{{ i18n.t('wizard.prefillSample') }}</span>
           </button>
         </div>
 
@@ -136,16 +137,16 @@ import { IconComponent } from '../../shared/components/icon.component';
                 (click)="fileInput.click()"
                 class="text-brand-400 hover:text-brand-300 font-semibold underline underline-offset-2"
               >
-                Upload Tender PDF
+                {{ i18n.t('wizard.uploadPdf') }}
               </button>
-              or drag & drop tender documents
+              {{ i18n.t('wizard.orDrag') }}
             </div>
             <p class="text-[11px] text-slate-500">
-              Apache PDFBox parses TED procurement notices, specifications, and criteria automatically.
+              {{ i18n.t('wizard.pdfboxNotice') }}
             </p>
             <div *ngIf="isParsingPdf()" class="pt-2 flex items-center justify-center space-x-2 text-xs text-brand-300">
               <app-icon name="loader" [size]="14" classNames="animate-spin"></app-icon>
-              <span>Parsing PDF text with PDFBox...</span>
+              <span>{{ i18n.t('wizard.parsingPdf') }}</span>
             </div>
             <div *ngIf="uploadedFileName()" class="pt-2 text-xs text-emerald-400 flex items-center justify-center space-x-1.5">
               <app-icon name="check" [size]="14"></app-icon>
@@ -158,20 +159,20 @@ import { IconComponent } from '../../shared/components/icon.component';
         <form [formGroup]="tenderForm" class="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1.5">Tender / RFP Title *</label>
+              <label class="block text-xs font-medium text-slate-300 mb-1.5">{{ i18n.t('wizard.tenderTitle') }} *</label>
               <input
                 type="text"
                 formControlName="tenderTitle"
-                placeholder="e.g. TED 2026/S: Maritime Logistics Platform Modernization"
+                [placeholder]="i18n.t('wizard.tenderTitlePlaceholder')"
                 class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
             <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1.5">Contracting Authority / Client *</label>
+              <label class="block text-xs font-medium text-slate-300 mb-1.5">{{ i18n.t('wizard.clientName') }} *</label>
               <input
                 type="text"
                 formControlName="clientName"
-                placeholder="e.g. European Maritime Safety Agency (EMSA)"
+                [placeholder]="i18n.t('wizard.clientNamePlaceholder')"
                 class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
@@ -179,16 +180,16 @@ import { IconComponent } from '../../shared/components/icon.component';
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1.5">Jurisdiction / Member State</label>
+              <label class="block text-xs font-medium text-slate-300 mb-1.5">{{ i18n.t('wizard.country') }}</label>
               <input
                 type="text"
                 formControlName="country"
-                placeholder="e.g. Portugal / European Union"
+                [placeholder]="i18n.t('wizard.countryPlaceholder')"
                 class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
             <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1.5">Submission Deadline</label>
+              <label class="block text-xs font-medium text-slate-300 mb-1.5">{{ i18n.t('wizard.deadline') }}</label>
               <input
                 type="date"
                 formControlName="submissionDeadline"
@@ -199,12 +200,12 @@ import { IconComponent } from '../../shared/components/icon.component';
 
           <div>
             <label class="block text-xs font-medium text-slate-300 mb-1.5">
-              Tender Specifications & Scope of Work *
+              {{ i18n.t('wizard.specs') }} *
             </label>
             <textarea
               rows="6"
               formControlName="rawTenderText"
-              placeholder="Paste tender requirements, functional work packages, architectural constraints, and compliance mandates..."
+              [placeholder]="i18n.t('wizard.specsPlaceholder')"
               class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500 leading-relaxed font-mono text-[11px]"
             ></textarea>
           </div>
@@ -216,7 +217,7 @@ import { IconComponent } from '../../shared/components/icon.component';
               [disabled]="tenderForm.invalid"
               class="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 active:bg-brand-700 disabled:opacity-50 text-white text-xs font-semibold shadow-md transition-all"
             >
-              <span>Next: Select Case Studies</span>
+              <span>{{ i18n.t('wizard.nextStep2') }}</span>
               <app-icon name="arrow-right" [size]="14"></app-icon>
             </button>
           </div>
@@ -226,14 +227,21 @@ import { IconComponent } from '../../shared/components/icon.component';
       <!-- ================= STEP 2: Case Studies Matching ================= -->
       <div *ngIf="currentStep() === 2" class="space-y-6">
         <div>
-          <h1 class="text-2xl font-bold tracking-tight text-white">Step 2: Match Past Performance & Case Studies</h1>
+          <h1 class="text-2xl font-bold tracking-tight text-white">{{ i18n.t('wizard.step2Title') }}</h1>
           <p class="text-xs text-slate-400 mt-1">
-            Select the institutional track records that will be cited in the proposal to fulfill technical qualification criteria
+            {{ i18n.t('wizard.step2Subtitle') }}
           </p>
         </div>
 
         <div class="space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div *ngIf="availableCaseStudies().length === 0" class="p-8 text-center rounded-2xl bg-slate-900/40 border border-dashed border-slate-800 space-y-2">
+            <p class="text-xs text-slate-400">{{ i18n.t('wizard.noCaseStudiesFound') }}</p>
+            <a routerLink="/profile" class="inline-block text-xs text-brand-400 hover:underline">
+              {{ i18n.t('wizard.manageProfile') }}
+            </a>
+          </div>
+
+          <div *ngIf="availableCaseStudies().length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div
               *ngFor="let cs of availableCaseStudies()"
               (click)="toggleCaseStudy(cs.id)"
@@ -272,12 +280,12 @@ import { IconComponent } from '../../shared/components/icon.component';
           <!-- Custom Strategic Prompt Directive -->
           <div class="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3">
             <label class="block text-xs font-semibold text-white">
-              Strategic Bid Directives (Optional)
+              {{ i18n.t('wizard.strategicDirectives') }}
             </label>
             <input
               type="text"
               [(ngModel)]="customInstructions"
-              placeholder="e.g. Strongly highlight EU PM² certified project management, Gaia-X architecture, and fixed pricing guarantee."
+              [placeholder]="i18n.t('wizard.directivesPlaceholder')"
               class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
@@ -289,7 +297,7 @@ import { IconComponent } from '../../shared/components/icon.component';
               class="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium"
             >
               <app-icon name="arrow-left" [size]="14"></app-icon>
-              <span>Back</span>
+              <span>{{ i18n.t('wizard.back') }}</span>
             </button>
             <button
               type="button"
@@ -297,7 +305,7 @@ import { IconComponent } from '../../shared/components/icon.component';
               class="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 active:bg-brand-700 text-white text-xs font-semibold shadow-lg shadow-brand-600/30 transition-all"
             >
               <app-icon name="sparkles" [size]="15"></app-icon>
-              <span>Synthesize Proposal with AI</span>
+              <span>{{ i18n.t('wizard.synthesizeBtn') }}</span>
             </button>
           </div>
         </div>
@@ -310,9 +318,9 @@ import { IconComponent } from '../../shared/components/icon.component';
         </div>
 
         <div class="space-y-2 max-w-md mx-auto">
-          <h2 class="text-xl font-bold text-white">Synthesizing European Tender Proposal</h2>
+          <h2 class="text-xl font-bold text-white">{{ i18n.t('wizard.synthesizingTitle') }}</h2>
           <p class="text-xs text-slate-400">
-            Applying Directive 2014/24/EU standards, EU PM² methodology, and sovereign cybersecurity protocols.
+            {{ i18n.t('wizard.synthesizingSub') }}
           </p>
         </div>
 
@@ -325,23 +333,19 @@ import { IconComponent } from '../../shared/components/icon.component';
         <div class="space-y-2 text-xs text-left max-w-sm mx-auto font-mono text-slate-400">
           <div class="flex items-center space-x-2 text-emerald-400">
             <span>✓</span>
-            <span>Document scope extracted and parsed via PDFBox</span>
+            <span>{{ i18n.t('wizard.analyzingSpecs') }}</span>
           </div>
           <div class="flex items-center space-x-2 text-emerald-400">
             <span>✓</span>
-            <span>Agency competencies & case studies matched</span>
+            <span>{{ i18n.t('wizard.aligningDirectives') }}</span>
           </div>
           <div class="flex items-center space-x-2 text-brand-300">
             <app-icon name="loader" [size]="12" classNames="animate-spin"></app-icon>
-            <span>Drafting Work Packages & PM² Governance structure...</span>
+            <span>{{ i18n.t('wizard.matchingExperience') }}</span>
           </div>
           <div class="flex items-center space-x-2 text-slate-600">
             <span>○</span>
-            <span>Calculating firm-fixed EUR milestone pricing...</span>
-          </div>
-          <div class="flex items-center space-x-2 text-slate-600">
-            <span>○</span>
-            <span>Validating GDPR Art. 32 & NIS2 security criteria...</span>
+            <span>{{ i18n.t('wizard.generatingProposal') }}</span>
           </div>
         </div>
       </div>
@@ -353,7 +357,7 @@ import { IconComponent } from '../../shared/components/icon.component';
           <div class="space-y-1">
             <div class="flex items-center space-x-2">
               <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                PROPOSAL READY
+                {{ i18n.t('wizard.ready') }}
               </span>
               <span class="text-xs text-slate-400">{{ generatedProposal()?.clientName }}</span>
             </div>
@@ -367,7 +371,7 @@ import { IconComponent } from '../../shared/components/icon.component';
               class="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition-colors"
             >
               <app-icon *ngIf="isSavingEdits()" name="loader" [size]="14" classNames="animate-spin"></app-icon>
-              <span>{{ isSavingEdits() ? 'Saving...' : 'Save Draft' }}</span>
+              <span>{{ isSavingEdits() ? i18n.t('wizard.saving') : i18n.t('wizard.saveDraft') }}</span>
             </button>
 
             <!-- Export PDF -->
@@ -376,7 +380,7 @@ import { IconComponent } from '../../shared/components/icon.component';
               class="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 active:bg-brand-700 text-white text-xs font-semibold shadow-md transition-colors"
             >
               <app-icon name="download" [size]="14"></app-icon>
-              <span>Export PDF</span>
+              <span>{{ i18n.t('wizard.exportPdf') }}</span>
             </button>
 
             <!-- Export DOCX -->
@@ -385,7 +389,7 @@ import { IconComponent } from '../../shared/components/icon.component';
               class="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition-colors"
             >
               <app-icon name="file-text" [size]="14"></app-icon>
-              <span>Export Word (.docx)</span>
+              <span>{{ i18n.t('wizard.exportDocx') }}</span>
             </button>
           </div>
         </div>
@@ -393,7 +397,7 @@ import { IconComponent } from '../../shared/components/icon.component';
         <!-- Section Navigation Tabs -->
         <div class="flex overflow-x-auto space-x-2 pb-2">
           <button
-            *ngFor="let tab of editorTabs"
+            *ngFor="let tab of getEditorTabs()"
             (click)="activeTab = tab.id"
             [ngClass]="{
               'bg-brand-500/15 text-brand-300 border-brand-500/30': activeTab === tab.id,
@@ -410,8 +414,8 @@ import { IconComponent } from '../../shared/components/icon.component';
           <!-- 1. Executive Summary -->
           <div *ngIf="activeTab === 'summary'" class="space-y-3">
             <div class="flex items-center justify-between">
-              <label class="text-sm font-semibold text-white">1. Executive Summary & Value Proposition</label>
-              <span class="text-[11px] text-slate-400">Directive 2014/24/EU compliant</span>
+              <label class="text-sm font-semibold text-white">{{ i18n.t('wizard.tabExecSummary') }}</label>
+              <span class="text-[11px] text-slate-400">Directive 2014/24/EU</span>
             </div>
             <textarea
               rows="8"
@@ -423,7 +427,7 @@ import { IconComponent } from '../../shared/components/icon.component';
           <!-- 2. Proposed Methodology -->
           <div *ngIf="activeTab === 'methodology'" class="space-y-3">
             <div class="flex items-center justify-between">
-              <label class="text-sm font-semibold text-white">2. Proposed Methodology & Work Packages</label>
+              <label class="text-sm font-semibold text-white">{{ i18n.t('wizard.tabTechSolution') }}</label>
               <span class="text-[11px] text-slate-400">EU PM² + Agile Framework</span>
             </div>
             <textarea
@@ -436,8 +440,8 @@ import { IconComponent } from '../../shared/components/icon.component';
           <!-- 3. Team Qualifications -->
           <div *ngIf="activeTab === 'team'" class="space-y-3">
             <div class="flex items-center justify-between">
-              <label class="text-sm font-semibold text-white">3. Key Personnel & Institutional Qualifications</label>
-              <span class="text-[11px] text-slate-400">EU Security Clearance & Certifications</span>
+              <label class="text-sm font-semibold text-white">{{ i18n.t('profile.teamBios') }}</label>
+              <span class="text-[11px] text-slate-400">EU Security Clearance</span>
             </div>
             <textarea
               rows="8"
@@ -449,8 +453,8 @@ import { IconComponent } from '../../shared/components/icon.component';
           <!-- 4. Timeline & Milestones -->
           <div *ngIf="activeTab === 'timeline'" class="space-y-3">
             <div class="flex items-center justify-between">
-              <label class="text-sm font-semibold text-white">4. Implementation Timeline & Deliverables</label>
-              <span class="text-[11px] text-slate-400">Structured Milestones M1 to M5</span>
+              <label class="text-sm font-semibold text-white">{{ i18n.t('wizard.tabImplementation') }}</label>
+              <span class="text-[11px] text-slate-400">M1 to M5</span>
             </div>
             <textarea
               rows="8"
@@ -462,8 +466,8 @@ import { IconComponent } from '../../shared/components/icon.component';
           <!-- 5. Pricing Structure -->
           <div *ngIf="activeTab === 'pricing'" class="space-y-3">
             <div class="flex items-center justify-between">
-              <label class="text-sm font-semibold text-white">5. Commercial Offer & Firm-Fixed EUR Pricing</label>
-              <span class="text-[11px] text-slate-400">Excl. VAT / Man-day schedule</span>
+              <label class="text-sm font-semibold text-white">{{ i18n.t('wizard.tabCommercial') }}</label>
+              <span class="text-[11px] text-slate-400">EUR / VAT</span>
             </div>
             <textarea
               rows="8"
@@ -475,8 +479,8 @@ import { IconComponent } from '../../shared/components/icon.component';
           <!-- 6. Regulatory & Security Compliance -->
           <div *ngIf="activeTab === 'compliance'" class="space-y-3">
             <div class="flex items-center justify-between">
-              <label class="text-sm font-semibold text-white">6. European Regulatory & Security Compliance</label>
-              <span class="text-[11px] text-slate-400">GDPR Art. 32, NIS2, ISO 27001, WCAG 2.1 AA</span>
+              <label class="text-sm font-semibold text-white">{{ i18n.t('wizard.tabCompliance') }}</label>
+              <span class="text-[11px] text-slate-400">GDPR Art. 32, NIS2, ISO 27001</span>
             </div>
             <textarea
               rows="8"
@@ -492,13 +496,13 @@ import { IconComponent } from '../../shared/components/icon.component';
             (click)="goToStep(1)"
             class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium"
           >
-            Start Another Proposal
+            {{ i18n.t('wizard.anotherProposal') }}
           </button>
           <a
             routerLink="/proposals"
             class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium"
           >
-            Go to Proposal Archive
+            {{ i18n.t('wizard.toArchive') }}
           </a>
         </div>
       </div>
@@ -509,6 +513,7 @@ export class WizardComponent implements OnInit {
   private fb = inject(FormBuilder);
   proposalService = inject(ProposalService);
   private profileService = inject(ProfileService);
+  i18n = inject(TranslationService);
   private router = inject(Router);
 
   currentStep = signal<number>(1);
@@ -531,14 +536,16 @@ export class WizardComponent implements OnInit {
   isSavingEdits = signal<boolean>(false);
   activeTab = 'summary';
 
-  editorTabs = [
-    { id: 'summary', label: '1. Executive Summary' },
-    { id: 'methodology', label: '2. Methodology & WPs' },
-    { id: 'team', label: '3. Team & Qualifications' },
-    { id: 'timeline', label: '4. Timeline & Milestones' },
-    { id: 'pricing', label: '5. Pricing Structure' },
-    { id: 'compliance', label: '6. EU Compliance' }
-  ];
+  getEditorTabs() {
+    return [
+      { id: 'summary', label: '1. ' + this.i18n.t('wizard.tabExecSummary') },
+      { id: 'methodology', label: '2. ' + this.i18n.t('wizard.tabTechSolution') },
+      { id: 'team', label: '3. ' + this.i18n.t('profile.teamBios') },
+      { id: 'timeline', label: '4. ' + this.i18n.t('wizard.tabImplementation') },
+      { id: 'pricing', label: '5. ' + this.i18n.t('wizard.tabCommercial') },
+      { id: 'compliance', label: '6. ' + this.i18n.t('wizard.tabCompliance') }
+    ];
+  }
 
   tenderForm = this.fb.group({
     tenderTitle: ['', Validators.required],
@@ -635,7 +642,6 @@ Key Requirements:
       customInstructions: this.customInstructions
     };
 
-    // Realistic synthesis delay for polish
     setTimeout(() => {
       this.proposalService.generateProposal(request).subscribe({
         next: (proposal) => {

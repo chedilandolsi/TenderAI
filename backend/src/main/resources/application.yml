@@ -29,11 +29,13 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID:tenderai-dev-google-client-id}
-            client-secret: ${GOOGLE_CLIENT_SECRET:tenderai-dev-google-client-secret}
+            client-id: ${GOOGLE_CLIENT_ID:}
+            client-secret: ${GOOGLE_CLIENT_SECRET:}
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope:
               - email
               - profile
+              - openid
 
   mail:
     host: ${SMTP_HOST:smtp.gmail.com}

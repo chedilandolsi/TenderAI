@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProfileService } from '../../core/services/profile.service';
+import { TranslationService } from '../../core/services/translation.service';
 import { CaseStudy, CompanyProfile } from '../../models';
 import { IconComponent } from '../../shared/components/icon.component';
 
@@ -14,9 +15,9 @@ import { IconComponent } from '../../shared/components/icon.component';
       <!-- Header -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold tracking-tight text-white">Agency Profile & Track Records</h1>
+          <h1 class="text-2xl font-bold tracking-tight text-white">{{ i18n.t('profile.title') }}</h1>
           <p class="text-xs text-slate-400 mt-1">
-            Context used by TenderAI to tailor technical qualifications and commercial proposals
+            {{ i18n.t('profile.subtitle') }}
           </p>
         </div>
         <button
@@ -25,67 +26,68 @@ import { IconComponent } from '../../shared/components/icon.component';
           class="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 active:bg-brand-700 disabled:opacity-50 text-white text-xs font-semibold shadow-md transition-all"
         >
           <app-icon *ngIf="isSaving()" name="loader" [size]="14" classNames="animate-spin"></app-icon>
-          <span>{{ isSaving() ? 'Saving Changes...' : 'Save Profile' }}</span>
+          <span>{{ isSaving() ? i18n.t('profile.saving') : i18n.t('profile.saveBtn') }}</span>
         </button>
       </div>
 
       <!-- Toast Notification -->
       <div *ngIf="saveSuccess()" class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 flex items-center space-x-2">
         <app-icon name="check" [size]="16"></app-icon>
-        <span>Agency profile and case studies updated successfully.</span>
+        <span>{{ i18n.t('profile.saveSuccess') }}</span>
       </div>
 
       <!-- General Agency Information Form -->
       <div class="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-5">
-        <h2 class="text-base font-semibold text-white">Core Agency Credentials</h2>
+        <h2 class="text-base font-semibold text-white">{{ i18n.t('profile.coreTitle') }}</h2>
 
         <form [formGroup]="profileForm" class="space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1.5">Agency / Company Name</label>
+              <label class="block text-xs font-medium text-slate-300 mb-1.5">{{ i18n.t('profile.agencyName') }}</label>
               <input
                 type="text"
                 formControlName="agencyName"
+                [placeholder]="i18n.t('profile.agencyNamePlaceholder')"
                 class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
             <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1.5">Website URL</label>
+              <label class="block text-xs font-medium text-slate-300 mb-1.5">{{ i18n.t('profile.website') }}</label>
               <input
                 type="text"
                 formControlName="website"
-                placeholder="https://agency.eu"
+                [placeholder]="i18n.t('profile.websitePlaceholder')"
                 class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1.5">Executive Tagline / Value Proposition</label>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">{{ i18n.t('profile.tagline') }}</label>
             <input
               type="text"
               formControlName="tagline"
-              placeholder="e.g. Architects of sovereign European public sector digital infrastructure"
+              [placeholder]="i18n.t('profile.taglinePlaceholder')"
               class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1.5">Core Competencies & Institutional Specialties</label>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">{{ i18n.t('profile.coreCompetencies') }}</label>
             <textarea
               rows="3"
               formControlName="coreCompetencies"
-              placeholder="e.g. Gaia-X sovereign cloud, eIDAS verification, NIS2 compliance, Spring Boot & Angular architecture..."
+              [placeholder]="i18n.t('profile.coreCompetenciesPlaceholder')"
               class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
             ></textarea>
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1.5">Key Personnel & Team Qualifications</label>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">{{ i18n.t('profile.teamBios') }}</label>
             <textarea
               rows="3"
               formControlName="teamBios"
-              placeholder="e.g. Dr. Elena Vance (Lead Architect, 15 yrs EC advisory); Marc Dubois (CISSP Security Auditor)..."
+              [placeholder]="i18n.t('profile.teamBiosPlaceholder')"
               class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
             ></textarea>
           </div>
@@ -96,20 +98,24 @@ import { IconComponent } from '../../shared/components/icon.component';
       <div class="space-y-4">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-base font-semibold text-white">Verified Past Performance (Case Studies)</h2>
-            <p class="text-xs text-slate-400">Selected during tender proposal generation to prove technical capacity</p>
+            <h2 class="text-base font-semibold text-white">{{ i18n.t('profile.caseStudiesTitle') }}</h2>
+            <p class="text-xs text-slate-400">{{ i18n.t('profile.caseStudiesSubtitle') }}</p>
           </div>
           <button
             (click)="showAddModal.set(true)"
             class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition-colors"
           >
             <app-icon name="plus" [size]="14"></app-icon>
-            <span>Add Case Study</span>
+            <span>{{ i18n.t('profile.addCaseStudy') }}</span>
           </button>
         </div>
 
         <!-- Case Studies List -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div *ngIf="caseStudies().length === 0" class="p-8 text-center rounded-2xl bg-slate-900/40 border border-dashed border-slate-800">
+          <p class="text-xs text-slate-400">{{ i18n.t('profile.noCaseStudies') }}</p>
+        </div>
+
+        <div *ngIf="caseStudies().length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div
             *ngFor="let cs of caseStudies()"
             class="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 relative flex flex-col justify-between hover:border-slate-700 transition-colors"
@@ -121,7 +127,7 @@ import { IconComponent } from '../../shared/components/icon.component';
                 </span>
                 <button
                   (click)="deleteCaseStudy(cs.id)"
-                  title="Remove case study"
+                  [title]="i18n.t('profile.delete')"
                   class="p-1 text-slate-500 hover:text-rose-400 transition-colors"
                 >
                   <app-icon name="trash" [size]="14"></app-icon>
@@ -132,8 +138,8 @@ import { IconComponent } from '../../shared/components/icon.component';
             </div>
 
             <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
-              <span>Budget: <strong class="text-slate-200 font-semibold">{{ cs.budget }}</strong></span>
-              <span>Duration: {{ cs.duration }}</span>
+              <span>{{ i18n.t('profile.contractValue') }}: <strong class="text-slate-200 font-semibold">{{ cs.budget }}</strong></span>
+              <span>{{ cs.duration }}</span>
             </div>
           </div>
         </div>
@@ -143,7 +149,7 @@ import { IconComponent } from '../../shared/components/icon.component';
       <div *ngIf="showAddModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
         <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
           <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-            <h3 class="text-sm font-semibold text-white">Add Past Performance Record</h3>
+            <h3 class="text-sm font-semibold text-white">{{ i18n.t('profile.modalTitle') }}</h3>
             <button (click)="showAddModal.set(false)" class="text-slate-400 hover:text-white">
               <app-icon name="x" [size]="18"></app-icon>
             </button>
@@ -151,52 +157,52 @@ import { IconComponent } from '../../shared/components/icon.component';
 
           <form [formGroup]="caseStudyForm" (ngSubmit)="submitCaseStudy()" class="space-y-3">
             <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1">Project / Contract Title</label>
+              <label class="block text-xs font-medium text-slate-300 mb-1">{{ i18n.t('profile.projectTitle') }}</label>
               <input
                 type="text"
                 formControlName="title"
-                placeholder="e.g. Cross-Border Sovereign Data Exchange"
+                [placeholder]="i18n.t('profile.projectTitlePlaceholder')"
                 class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100"
               />
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">Client / Authority</label>
+                <label class="block text-xs font-medium text-slate-300 mb-1">{{ i18n.t('profile.clientName') }}</label>
                 <input
                   type="text"
                   formControlName="client"
-                  placeholder="e.g. DG CONNECT, EC"
+                  [placeholder]="i18n.t('profile.clientNamePlaceholder')"
                   class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100"
                 />
               </div>
               <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">Contract Budget</label>
+                <label class="block text-xs font-medium text-slate-300 mb-1">{{ i18n.t('profile.contractValue') }}</label>
                 <input
                   type="text"
                   formControlName="budget"
-                  placeholder="e.g. €1,200,000"
+                  [placeholder]="i18n.t('profile.contractValuePlaceholder')"
                   class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100"
                 />
               </div>
             </div>
 
             <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1">Duration</label>
+              <label class="block text-xs font-medium text-slate-300 mb-1">{{ i18n.t('profile.year') }} / Duration</label>
               <input
                 type="text"
                 formControlName="duration"
-                placeholder="e.g. 12 months"
+                placeholder="12 months"
                 class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100"
               />
             </div>
 
             <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1">Summary of Outcomes</label>
+              <label class="block text-xs font-medium text-slate-300 mb-1">{{ i18n.t('profile.outcomes') }}</label>
               <textarea
                 rows="3"
                 formControlName="summary"
-                placeholder="Key technical milestones, user adoption, compliance achievements..."
+                [placeholder]="i18n.t('profile.outcomesPlaceholder')"
                 class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100"
               ></textarea>
             </div>
@@ -207,14 +213,14 @@ import { IconComponent } from '../../shared/components/icon.component';
                 (click)="showAddModal.set(false)"
                 class="px-3.5 py-2 rounded-xl text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300"
               >
-                Cancel
+                {{ i18n.t('profile.cancel') }}
               </button>
               <button
                 type="submit"
                 [disabled]="caseStudyForm.invalid"
                 class="px-4 py-2 rounded-xl text-xs font-semibold bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white"
               >
-                Save Record
+                {{ i18n.t('profile.saveCaseStudy') }}
               </button>
             </div>
           </form>
@@ -226,6 +232,7 @@ import { IconComponent } from '../../shared/components/icon.component';
 export class ProfileComponent implements OnInit {
   private fb = inject(FormBuilder);
   private profileService = inject(ProfileService);
+  i18n = inject(TranslationService);
 
   isSaving = signal(false);
   saveSuccess = signal(false);
@@ -281,7 +288,7 @@ export class ProfileComponent implements OnInit {
     };
 
     this.profileService.updateProfile(updated).subscribe({
-      next: (res) => {
+      next: () => {
         this.isSaving.set(false);
         this.saveSuccess.set(true);
         setTimeout(() => this.saveSuccess.set(false), 3000);

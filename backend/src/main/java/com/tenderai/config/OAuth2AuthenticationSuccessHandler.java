@@ -81,9 +81,12 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             if (!user.isEmailVerified()) {
                 user.setEmailVerified(true);
             }
-            if ("LOCAL".equals(user.getProvider())) {
+            if (user.getProvider() == null || "LOCAL".equals(user.getProvider())) {
                 user.setProvider("GOOGLE");
                 user.setProviderId(sub);
+            }
+            if (name != null && (user.getFullName() == null || user.getFullName().isBlank())) {
+                user.setFullName(name);
             }
             userRepository.save(user);
             log.info("Existing user logged in via Google OAuth2: {}", email);

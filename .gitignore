@@ -28,6 +28,7 @@ yarn-error.log*
 # Environment and Secrets (Never commit secrets)
 .env
 .env.*
+!.env.example
 *.env
 secrets.json
 secrets.yml
