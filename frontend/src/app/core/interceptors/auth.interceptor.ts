@@ -1,14 +1,18 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
-import { TranslationService } from '../services/translation.service';
 import { catchError, throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  // Never intercept static translation asset requests
+  if (req.url.includes('/assets/i18n/')) {
+    return next(req);
+  }
+
   const authService = inject(AuthService);
-  const i18n = inject(TranslationService);
   const token = authService.getToken();
-  const currentLang = i18n.currentLang();
+  // Read language directly from localStorage to prevent circular DI with TranslationService
+  const currentLang = (typeof localStorage !== 'undefined' ? localStorage.getItem('tenderai_lang') : null) || 'en';
 
   const headers: Record<string, string> = {
     'Accept-Language': currentLang
